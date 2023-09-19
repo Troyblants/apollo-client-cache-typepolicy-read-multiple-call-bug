@@ -37,6 +37,7 @@ const ADD_PERSON = gql`
 function App() {
   const [name, setName] = useState("");
   const { loading, data } = useQuery(ALL_PEOPLE);
+  const _another = useQuery(ALL_PEOPLE); // <- Triggers another call on read
 
   const [addPerson] = useMutation(ADD_PERSON, {
     update: (cache, { data: { addPerson: addPersonData } }) => {
@@ -87,7 +88,17 @@ function App() {
 }
 
 const client = new ApolloClient({
-  cache: new InMemoryCache(),
+  cache: new InMemoryCache({
+    typePolicies: {
+      Person: {
+        fields: {
+          name: {
+            read: (existing) => existing != null ? existing + '+' : existing
+          }
+        },
+      }
+    }
+  }),
   link,
 });
 
